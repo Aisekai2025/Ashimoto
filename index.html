@@ -1,244 +1,219 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Ashimoto - あなたのOSを調律する</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body { background-color: #080808; overflow: hidden; font-family: 'Hiragino Mincho ProN', 'serif'; color: #d4d4d4; }
-    
-    .orb {
-      position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%);
-      width: 140px; height: 140px; border-radius: 50%;
-      filter: blur(25px); transition: all 4s ease;
-      animation: breathe 8s infinite ease-in-out;
-    }
-    
-    @keyframes breathe { 
-      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; } 
-      50% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.8; } 
-    }
-    
-    .particle { 
-      position: absolute; pointer-events: none; background: #ffe0aa; border-radius: 50%; 
-    }
-    
-    .road-light {
-      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-      width: 300px; height: 400px;
-      background: radial-gradient(ellipse at bottom, rgba(255,200,100,0.15) 0%, transparent 75%);
-      opacity: 0; transition: opacity 4s ease;
-    }
-    
-    .asset-star { 
-      position: absolute; background: #fff; border-radius: 50%; opacity: 0.4; filter: blur(1px); 
-    }
-    
-    button { 
-      backdrop-filter: blur(10px); transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
-    }
-    
-    .fade-in { animation: fadeIn 3s forwards; }
-    @keyframes fadeIn { 
-      from { opacity: 0; transform: translateY(10px); } 
-      to { opacity: 1; transform: translateY(0); } 
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ashimoto - あなたの足元を照らす道しるべ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { --orb-color1: rgba(255,180,80,0.7); --orb-color2: rgba(255,100,0,0); }
+        body { background-color: #080808; overflow: hidden; font-family: 'Hiragino Mincho ProN', 'serif'; color: #d4d4d4; transition: background-color 3s; }
+        .orb {
+            position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%);
+            width: 150px; height: 150px; border-radius: 50%;
+            background: radial-gradient(circle, var(--orb-color1) 0%, var(--orb-color2) 75%);
+            filter: blur(25px); transition: all 4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: breathe 8s infinite ease-in-out;
+        }
+        @keyframes breathe { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; } 50% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.8; } }
+        .particle { position: absolute; pointer-events: none; background: #ffe0aa; border-radius: 50%; z-index: 5; }
+        .road-light {
+            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 350px; height: 450px;
+            background: radial-gradient(ellipse at bottom, rgba(255,200,100,0.15) 0%, transparent 80%);
+            opacity: 0; transition: opacity 5s ease;
+        }
+        .asset-star { position: absolute; background: #fff; border-radius: 50%; opacity: 0.4; filter: blur(1px); transition: all 2s; }
+        button { backdrop-filter: blur(10px); transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .fade-in { animation: fadeIn 3s forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        textarea::placeholder { color: rgba(255,255,255,0.2); }
+    </style>
 </head>
 <body>
 
-  <div id="vault" class="fixed top-6 left-0 right-0 flex justify-center space-x-1 opacity-40 pointer-events-none"></div>
+    <!-- 資産の貯蔵庫 (Mental Vault) -->
+    <div id="vault" class="fixed top-8 left-0 right-0 flex justify-center space-x-1 opacity-50 pointer-events-none z-50"></div>
 
-  <div id="orb" class="orb" style="background: radial-gradient(circle, rgba(255,180,80,0.7) 0%, rgba(255,100,0,0) 75%);"></div>
-  
-  <div id="road-light" class="road-light"></div>
+    <div id="orb" class="orb"></div>
+    <div id="road-light" class="road-light"></div>
 
-  <div id="ui-container" class="fixed inset-0 flex flex-col justify-end p-10 space-y-6 z-20">
-    
-    <div id="setup-screen" class="hidden flex flex-col space-y-8 mb-10">
-      <p id="setup-q" class="text-center tracking-widest leading-relaxed"></p>
-      <div id="setup-btns" class="flex flex-col space-y-4"></div>
-    </div>
-
-    <div id="main-screen" class="hidden flex flex-col space-y-6">
-      <div id="message" class="text-center mb-16 opacity-0 transition-opacity duration-2000 text-lg tracking-[0.2em]">最近、どう？</div>
-      
-      <div id="actions" class="flex flex-col space-y-4 opacity-0 transition-opacity duration-1000">
-        <button onclick="handleFlow(1)" class="bg-white/5 border border-white/10 py-5 rounded-full hover:bg-white/10">言葉にならない</button>
-        <button onclick="handleFlow(2)" class="bg-white/5 border border-white/10 py-5 rounded-full hover:bg-white/10">普通、かな</button>
-        <button onclick="handleFlow(3)" class="bg-white/5 border border-white/10 py-5 rounded-full hover:bg-white/10">少し、話したい</button>
-      </div>
-    </div>
-
-    <div id="text-input" class="hidden flex flex-col space-y-6">
-      <textarea id="user-log" class="bg-transparent border-b border-white/20 p-4 text-stone-200 focus:outline-none focus:border-amber-500/50 transition-colors resize-none h-32" placeholder="心の中を置くように。"></textarea>
-      <button onclick="finalize()" class="text-amber-200/70 text-sm tracking-widest hover:text-amber-200 transition">このまま、預ける</button>
-    </div>
-
-    <div id="final-words" class="hidden text-center space-y-8 pb-10">
-      <div class="space-y-4">
-        <p class="fade-in opacity-0" style="animation-delay: 1s;">おかえりなさい</p>
-        <p class="fade-in opacity-0" style="animation-delay: 2.5s;">お疲れ様</p>
-        <p class="fade-in opacity-0" style="animation-delay: 4s;">またいつでも</p>
-        <p id="os-advice" class="fade-in opacity-0 text-[11px] text-stone-500 pt-4" style="animation-delay: 5.5s;"></p>
-      </div>
-      <button onclick="resetApp()" class="fade-in opacity-0 mt-12 text-[10px] tracking-[0.3em] text-stone-500 hover:text-stone-300 uppercase" style="animation-delay: 7s;">[ 深呼吸して戻る ]</button>
-    </div>
-  </div>
-
-  <script>
-    // 初期設定の質問群
-    const questions = [
-      { q: "鏡のタイプは？", a: [{t:"ありのままを映して", v:"accept"}, {t:"曇りを指摘して", v:"logic"}] },
-      { q: "通信の頻度は？", a: [{t:"必要なときだけ", v:"low"}, {t:"定期的にノックして", v:"high"}] },
-      { q: "報酬の形は？", a: [{t:"温かい共感", v:"heart"}, {t:"次の一手", v:"step"}] }
-    ];
-    let setupIndex = 0;
-    let answers = [];
-    let trustCount = parseInt(localStorage.getItem('ashimoto_trust') || '0');
-
-    function init() {
-      const config = localStorage.getItem('ashimoto_config');
-      if (!config) {
-        showSetup();
-      } else {
-        applyConfig(JSON.parse(config));
-        showMain();
-      }
-      updateVault();
-    }
-
-    function showSetup() {
-      document.getElementById('setup-screen').classList.remove('hidden');
-      const q = questions[setupIndex];
-      document.getElementById('setup-q').innerText = q.q;
-      const btns = document.getElementById('setup-btns');
-      btns.innerHTML = '';
-      q.a.forEach(opt => {
-        const b = document.createElement('button');
-        b.className = "bg-white/5 border border-white/10 py-5 rounded-full text-sm hover:bg-white/10 transition";
-        b.innerText = opt.t;
-        b.onclick = () => nextSetup(opt.v);
-        btns.appendChild(b);
-      });
-    }
-
-    function nextSetup(val) {
-      answers.push(val);
-      setupIndex++;
-      if (setupIndex < questions.length) {
-        showSetup();
-      } else {
-        const config = {
-          type: answers[0] === 'accept' ? 'warm' : 'cool',
-          pace: answers[1],
-          reward: answers[2]
-        };
-        localStorage.setItem('ashimoto_config', JSON.stringify(config));
-        applyConfig(config);
-        document.getElementById('setup-screen').classList.add('hidden');
-        showMain();
-      }
-    }
-
-    function applyConfig(config) {
-      const orb = document.getElementById('orb');
-      if(config.type === 'warm') {
-        orb.style.background = "radial-gradient(circle, rgba(255,180,80,0.7) 0%, rgba(255,100,0,0) 75%)";
-      } else {
-        orb.style.background = "radial-gradient(circle, rgba(200,220,255,0.6) 0%, rgba(100,150,255,0) 75%)";
-      }
-      const advice = config.reward === 'heart' ? "あなたの感受性は、世界を彩る資産です。" : "小さなズレを、今日の収穫にしましょう。";
-      document.getElementById('os-advice').innerText = advice;
-    }
-
-    function showMain() {
-      document.getElementById('main-screen').classList.remove('hidden');
-      setTimeout(() => document.getElementById('message').style.opacity = '1', 500);
-      setTimeout(() => document.getElementById('actions').style.opacity = '1', 1500);
-    }
-
-    function handleFlow(type) {
-      // 粒子の拡散エフェクト
-      createParticles(window.innerWidth / 2, window.innerHeight * 0.35);
-      
-      document.getElementById('main-screen').classList.add('hidden');
-      if(type === 3) {
-        document.getElementById('text-input').classList.remove('hidden');
-      } else {
-        finalize();
-      }
-    }
-
-    function finalize() {
-      // 信頼資産の蓄積
-      trustCount++;
-      localStorage.setItem('ashimoto_trust', trustCount);
-      
-      // 大きな粒子の拡散エフェクト
-      createParticles(window.innerWidth / 2, window.innerHeight * 0.4, 50);
-
-      document.getElementById('text-input').classList.add('hidden');
-      
-      // 光の挙動変化と道しるべの点灯
-      document.getElementById('orb').style.transform = 'translate(-50%, -50%) scale(0.6)';
-      document.getElementById('orb').style.filter = 'blur(40px)';
-      document.getElementById('road-light').style.opacity = '1';
-      
-      document.getElementById('final-words').classList.remove('hidden');
-      updateVault();
-    }
-
-    function updateVault() {
-      trustCount = parseInt(localStorage.getItem('ashimoto_trust') || '0');
-      const vault = document.getElementById('vault');
-      vault.innerHTML = '';
-      
-      // 資産（入力回数）に応じて星を増やす
-      for(let i = 0; i < Math.min(trustCount, 50); i++) {
-        const s = document.createElement('div');
-        s.className = 'asset-star';
-        const size = Math.random() * 2 + 1;
-        s.style.width = size + 'px';
-        s.style.height = size + 'px';
-        s.style.margin = '0 2px';
-        vault.appendChild(s);
-      }
-    }
-
-    function createParticles(x, y, count = 30) {
-      for(let i = 0; i < count; i++) {
-        const p = document.createElement('div');
-        p.className = 'particle';
-        const size = Math.random() * 3 + 0.5;
-        p.style.width = size + 'px';
-        p.style.height = size + 'px';
-        p.style.left = x + 'px';
-        p.style.top = y + 'px';
-        document.body.appendChild(p);
+    <div id="ui-container" class="fixed inset-0 flex flex-col justify-end p-10 space-y-6 z-10">
         
-        const angle = Math.random() * Math.PI * 2;
-        const dist = Math.random() * 150 + 30;
-        const tx = Math.cos(angle) * dist;
-        const ty = Math.sin(angle) * dist;
-        
-        // 粒子の拡散アニメーション
-        p.animate([
-          { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
-          { transform: `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(0)`, opacity: 0 }
-        ], { duration: 2000 + Math.random() * 2000, easing: 'out-expo' });
-        
-        setTimeout(() => p.remove(), 4000);
-      }
-    }
+        <!-- 1. 初期設定プロトコル -->
+        <div id="setup-screen" class="hidden flex flex-col space-y-10 mb-12">
+            <p id="setup-q" class="text-center tracking-[0.2em] leading-relaxed text-stone-400"></p>
+            <div id="setup-btns" class="flex flex-col space-y-4"></div>
+        </div>
 
-    function resetApp() {
-      location.reload();
-    }
+        <!-- 2. メインインターフェース (最近どう？) -->
+        <div id="main-screen" class="hidden flex flex-col space-y-8">
+            <div id="message" class="text-center mb-16 opacity-0 transition-opacity duration-2000 text-lg tracking-[0.3em] font-light text-stone-200">
+                最近、どう？
+            </div>
+            <div id="actions" class="flex flex-col space-y-4 opacity-0 transition-opacity duration-1000">
+                <button onclick="handleFlow(1)" class="bg-white/5 border border-white/10 py-5 rounded-full hover:bg-white/10 hover:border-white/20">言葉にならない</button>
+                <button onclick="handleFlow(2)" class="bg-white/5 border border-white/10 py-5 rounded-full hover:bg-white/10 hover:border-white/20">普通、かな</button>
+                <button onclick="handleFlow(3)" class="bg-white/5 border border-white/10 py-5 rounded-full hover:bg-white/10 hover:border-white/20">少し、話したい</button>
+            </div>
+        </div>
 
-    // 初期化の実行
-    init();
-  </script>
+        <!-- 3. 自由記述 (内面ログのデフラグ) -->
+        <div id="text-input" class="hidden flex flex-col space-y-6">
+            <textarea id="user-log" class="bg-transparent border-b border-white/10 p-4 text-stone-300 focus:outline-none focus:border-amber-500/40 transition-all resize-none h-40 tracking-wider leading-loose" placeholder="ここにある言葉は、誰にも奪われません。"></textarea>
+            <button onclick="finalize()" class="text-amber-200/50 text-[11px] tracking-[0.4em] hover:text-amber-200 transition uppercase">このまま、預ける</button>
+        </div>
+
+        <!-- 4. 終了の三句とOSアドバイス -->
+        <div id="final-words" class="hidden text-center space-y-12 pb-10">
+            <div class="space-y-6 text-stone-200 tracking-[0.2em]">
+                <p class="fade-in opacity-0" style="animation-delay: 1s;">おかえりなさい</p>
+                <p class="fade-in opacity-0" style="animation-delay: 2.5s;">お疲れ様</p>
+                <p class="fade-in opacity-0" style="animation-delay: 4s;">またいつでも</p>
+                <p id="os-advice" class="fade-in opacity-0 text-[11px] text-amber-200/40 pt-6 leading-relaxed px-4" style="animation-delay: 6s;"></p>
+            </div>
+            <button onclick="location.reload()" class="fade-in opacity-0 mt-12 text-[10px] tracking-[0.5em] text-stone-600 hover:text-stone-400 transition" style="animation-delay: 8s;">
+                [ 深呼吸して戻る ]
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // グローバルステート
+        let trustCount = parseInt(localStorage.getItem('ashimoto_trust') || '0');
+        let config = JSON.parse(localStorage.getItem('ashimoto_config') || 'null');
+        
+        const setupQuestions = [
+            { q: "鏡のタイプは？", a: [{t:"ありのままを映して", v:"accept"}, {t:"曇りを指摘して", v:"logic"}] },
+            { q: "通信の頻度は？", a: [{t:"必要なときだけ", v:"low"}, {t:"定期的にノックして", v:"high"}] },
+            { q: "報酬の形は？", a: [{t:"温かい共感", v:"heart"}, {t:"次の一手", v:"step"}] }
+        ];
+        let setupIndex = 0;
+        let setupAnswers = [];
+
+        function init() {
+            updateVault();
+            if (!config) {
+                runSetup();
+            } else {
+                applyConfig();
+                showMain();
+            }
+        }
+
+        // 初期設定ロジック
+        function runSetup() {
+            document.getElementById('setup-screen').classList.remove('hidden');
+            const q = setupQuestions[setupIndex];
+            document.getElementById('setup-q').innerText = q.q;
+            const btnContainer = document.getElementById('setup-btns');
+            btnContainer.innerHTML = '';
+            q.a.forEach(opt => {
+                const b = document.createElement('button');
+                b.className = "bg-white/5 border border-white/10 py-5 rounded-full text-xs tracking-widest hover:bg-white/10";
+                b.innerText = opt.t;
+                b.onclick = () => {
+                    setupAnswers.push(opt.v);
+                    setupIndex++;
+                    if(setupIndex < setupQuestions.length) runSetup();
+                    else finishSetup();
+                };
+                btnContainer.appendChild(b);
+            });
+        }
+
+        function finishSetup() {
+            config = { type: setupAnswers[0], pace: setupAnswers[1], reward: setupAnswers[2] };
+            localStorage.setItem('ashimoto_config', JSON.stringify(config));
+            document.getElementById('setup-screen').classList.add('hidden');
+            applyConfig();
+            showMain();
+        }
+
+        function applyConfig() {
+            const orb = document.getElementById('orb');
+            if(config.type === 'accept') {
+                document.documentElement.style.setProperty('--orb-color1', 'rgba(255,180,80,0.7)');
+            } else {
+                document.documentElement.style.setProperty('--orb-color1', 'rgba(200,230,255,0.6)');
+            }
+            const advices = {
+                heart: "あなたの感受性は、世界を彩る資産です。",
+                step: "1ミリのズレを、今日の収穫にしましょう。"
+            };
+            document.getElementById('os-advice').innerText = advices[config.reward] || "";
+        }
+
+        // メインフロー
+        function showMain() {
+            const main = document.getElementById('main-screen');
+            main.classList.remove('hidden');
+            setTimeout(() => document.getElementById('message').style.opacity = '1', 1000);
+            setTimeout(() => document.getElementById('actions').style.opacity = '1', 2500);
+        }
+
+        function handleFlow(type) {
+            createParticles(window.innerWidth/2, window.innerHeight*0.35, 40);
+            document.getElementById('main-screen').classList.add('hidden');
+            if(type === 3) document.getElementById('text-input').classList.remove('hidden');
+            else finalize();
+        }
+
+        function finalize() {
+            trustCount++;
+            localStorage.setItem('ashimoto_trust', trustCount);
+            createParticles(window.innerWidth/2, window.innerHeight*0.4, 60);
+            
+            document.getElementById('text-input').classList.add('hidden');
+            document.getElementById('orb').style.transform = 'translate(-50%, -50%) scale(0.6)';
+            document.getElementById('orb').style.filter = 'blur(40px)';
+            document.getElementById('road-light').style.opacity = '1';
+            document.getElementById('final-words').classList.remove('hidden');
+            updateVault();
+        }
+
+        // 資産の視覚化 (Vault)
+        function updateVault() {
+            const vault = document.getElementById('vault');
+            vault.innerHTML = '';
+            const stars = Math.min(trustCount, 40); 
+            for(let i=0; i<stars; i++) {
+                const s = document.createElement('div');
+                s.className = 'asset-star';
+                const size = Math.random() * 2 + 1;
+                s.style.width = size + 'px';
+                s.style.height = size + 'px';
+                s.style.margin = '0 3px';
+                vault.appendChild(s);
+            }
+        }
+
+        // 黄金の粒子演出
+        function createParticles(x, y, count) {
+            for(let i=0; i<count; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                const size = Math.random() * 3 + 1;
+                p.style.width = size + 'px';
+                p.style.height = size + 'px';
+                p.style.left = x + 'px';
+                p.style.top = y + 'px';
+                document.body.appendChild(p);
+                
+                const angle = Math.random() * Math.PI * 2;
+                const dist = Math.random() * 200 + 40;
+                const tx = Math.cos(angle) * dist;
+                const ty = Math.sin(angle) * dist;
+
+                p.animate([
+                    { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+                    { transform: `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(0)`, opacity: 0 }
+                ], { duration: 2500 + Math.random() * 2000, easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)' });
+                setTimeout(() => p.remove(), 4500);
+            }
+        }
+
+        init();
+    </script>
 </body>
 </html>
