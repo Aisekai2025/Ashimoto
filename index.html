@@ -115,6 +115,48 @@
                 "電源を切るようにまぶたを閉じる。あなたの内側にある深い夜こそが、明日の光を醸造する場所だ。"
             ]
         };
+// --- 動的メッセージ合成エンジン ---
+const parts = {
+    intro: ["今は、", "あなたの", "静かな", "深い", "そのままの"],
+    subject: ["呼吸が", "輪郭が", "孤独が", "エラーログが", "試行錯誤が"],
+    suffix: ["資産になります。", "守られています。", "美しいのです。", "次への予兆です。", "ここに在ります。"]
+};
+
+let lastClickTime = 0;
+let clickIntervals = [];
+
+function showAdvice(cat) {
+    const now = Date.now();
+    const interval = now - lastClickTime;
+    lastClickTime = now;
+
+    // 連打検知（500ms以下の間隔）
+    const isPanic = interval < 500;
+    
+    const display = document.getElementById('advice-display');
+    display.style.opacity = '0';
+
+    // 連打されるほど、次の表示までの「ため（静寂）」を長くする
+    const delay = isPanic ? Math.min(interval * 5, 2000) : 600;
+
+    setTimeout(() => {
+        let finalMsg = "";
+        if (isPanic) {
+            // パニック時は、短い「受容」の言葉を優先
+            finalMsg = "大丈夫。ゆっくり、吐き出して。";
+        } else {
+            // 通常時は文学的な合成メッセージ、またはDBから選出
+            const list = advDB[cat];
+            finalMsg = list[Math.floor(Math.random() * list.length)];
+        }
+        
+        display.innerText = finalMsg;
+        display.style.opacity = '1';
+        
+        // 連打の数だけ、Vault（資産）に「小さな火」を灯す（連打を無駄にしない）
+        createParticles(window.innerWidth/2, window.innerHeight/2, isPanic ? 5 : 20);
+    }, delay);
+}
 
         let trustCount = parseInt(localStorage.getItem('ashimoto_trust') || '0');
         let config = JSON.parse(localStorage.getItem('ashimoto_config') || 'null');
