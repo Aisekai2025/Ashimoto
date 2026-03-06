@@ -7,33 +7,35 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root { --orb-color1: rgba(255,180,80,0.7); --orb-color2: rgba(255,100,0,0); }
-        body { background-color: #080808; overflow: hidden; font-family: 'Hiragino Mincho ProN', 'serif'; color: #d4d4d4; }
+        body { background-color: #080808; overflow: hidden; font-family: 'Hiragino Mincho ProN', 'serif'; color: #d4d4d4; transition: background-color 3s; }
         .orb {
             position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%);
-            width: 150px; height: 150px; border-radius: 50%;
+            width: 160px; height: 160px; border-radius: 50%;
             background: radial-gradient(circle, var(--orb-color1) 0%, var(--orb-color2) 75%);
-            filter: blur(25px); transition: all 4s ease;
-            animation: breathe 8s infinite ease-in-out;
+            filter: blur(30px); transition: all 4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: breathe 10s infinite ease-in-out;
         }
-        @keyframes breathe { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; } 50% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.8; } }
+        @keyframes breathe { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.4; } 50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.7; } }
         .particle { position: absolute; pointer-events: none; background: #ffe0aa; border-radius: 50%; z-index: 5; }
         .road-light {
             position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-            width: 350px; height: 450px;
+            width: 400px; height: 500px;
             background: radial-gradient(ellipse at bottom, rgba(255,200,100,0.12) 0%, transparent 80%);
-            opacity: 0; transition: opacity 5s ease;
+            opacity: 0; transition: opacity 6s ease;
         }
-        .asset-star { position: absolute; background: #fff; border-radius: 50%; opacity: 0.4; filter: blur(1px); }
-        button { backdrop-filter: blur(10px); transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        .fade-in { animation: fadeIn 3s forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .advice-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); }
+        .asset-star { position: absolute; background: #fff; border-radius: 50%; opacity: 0.35; filter: blur(1px); transition: transform 2s; }
+        button { backdrop-filter: blur(12px); transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
+        .fade-in { animation: fadeIn 3.5s forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        textarea::placeholder { color: rgba(255,255,255,0.15); font-weight: 200; }
+        .advice-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); }
+        .advice-box:active { background: rgba(255,255,255,0.08); transform: scale(0.98); }
     </style>
 </head>
 <body>
 
     <!-- 資産の貯蔵庫 (Mental Vault) -->
-    <div id="vault" class="fixed top-8 left-0 right-0 flex justify-center space-x-1 opacity-40 pointer-events-none z-50"></div>
+    <div id="vault" class="fixed top-10 left-0 right-0 flex justify-center space-x-1.5 opacity-50 pointer-events-none z-50"></div>
 
     <div id="orb" class="orb"></div>
     <div id="road-light" class="road-light"></div>
@@ -41,81 +43,79 @@
     <div id="ui-container" class="fixed inset-0 flex flex-col justify-end p-10 space-y-6 z-20">
         
         <!-- 1. 初期設定プロトコル -->
-        <div id="setup-screen" class="hidden flex flex-col space-y-10 mb-12">
-            <p id="setup-q" class="text-center tracking-[0.2em] leading-relaxed text-stone-400"></p>
+        <div id="setup-screen" class="hidden flex flex-col space-y-12 mb-12">
+            <p id="setup-q" class="text-center tracking-[0.3em] leading-relaxed text-stone-400 text-sm font-light"></p>
             <div id="setup-btns" class="flex flex-col space-y-4"></div>
         </div>
 
         <!-- 2. メインインターフェース -->
         <div id="main-screen" class="hidden flex flex-col space-y-8">
-            <div id="message" class="text-center mb-16 opacity-0 transition-opacity duration-2000 text-lg tracking-[0.3em] font-light text-stone-200">
+            <div id="message" class="text-center mb-20 opacity-0 transition-opacity duration-3000 text-lg tracking-[0.4em] font-extralight text-stone-100">
                 最近、どう？
             </div>
-            <div id="actions" class="flex flex-col space-y-4 opacity-0 transition-opacity duration-1000">
-                <button onclick="handleFlow(1)" class="bg-white/5 border border-white/10 py-5 rounded-full hover:bg-white/10">言葉にならない</button>
-                <button onclick="handleFlow(2)" class="bg-white/5 border border-white/10 py-5 rounded-full hover:bg-white/10">普通、かな</button>
-                <button onclick="handleFlow(3)" class="bg-white/5 border border-white/10 py-5 rounded-full hover:bg-white/10">少し、話したい</button>
+            <div id="actions" class="flex flex-col space-y-4 opacity-0 transition-opacity duration-1500">
+                <button onclick="handleFlow(1)" class="bg-white/5 border border-white/10 py-5 rounded-full text-xs tracking-[0.2em] font-light">言葉にならない</button>
+                <button onclick="handleFlow(2)" class="bg-white/5 border border-white/10 py-5 rounded-full text-xs tracking-[0.2em] font-light">普通、かな</button>
+                <button onclick="handleFlow(3)" class="bg-white/5 border border-white/10 py-5 rounded-full text-xs tracking-[0.2em] font-light">少し、話したい</button>
             </div>
         </div>
 
-        <!-- 3. 自由記述 (内面ログのデフラグ) -->
-        <div id="text-input" class="hidden flex flex-col space-y-6">
-            <textarea id="user-log" class="bg-transparent border-b border-white/10 p-4 text-stone-300 focus:outline-none h-40 resize-none tracking-wider leading-loose" placeholder="ここにある言葉は、誰にも奪われません。"></textarea>
-            <button onclick="finalize()" class="text-amber-200/50 text-[11px] tracking-[0.4em] uppercase">このまま、預ける</button>
+        <!-- 3. 自由記述 -->
+        <div id="text-input" class="hidden flex flex-col space-y-8">
+            <textarea id="user-log" class="bg-transparent border-b border-white/10 p-6 text-stone-300 focus:outline-none focus:border-amber-500/30 transition-all resize-none h-48 tracking-widest leading-loose font-light" placeholder="ここにある言葉は、誰にも奪われません。"></textarea>
+            <button onclick="finalize()" class="text-amber-200/40 text-[10px] tracking-[0.5em] hover:text-amber-200 transition uppercase font-light">このまま、預ける</button>
         </div>
 
-        <!-- 4. 終了画面 (三句 + 個別対応アドバイス) -->
-        <div id="final-words" class="hidden text-center space-y-10 pb-10 overflow-y-auto max-h-[80vh]">
-            <div class="space-y-4 text-stone-200 tracking-[0.2em]">
-                <p class="fade-in opacity-0" style="animation-delay: 0.5s;">おかえりなさい</p>
-                <p class="fade-in opacity-0" style="animation-delay: 1.5s;">お疲れ様</p>
-                <p class="fade-in opacity-0" style="animation-delay: 2.5s;">またいつでも</p>
+        <!-- 4. 終了画面 (文学的アドバイス) -->
+        <div id="final-words" class="hidden text-center space-y-12 pb-10 overflow-y-auto max-h-[85vh]">
+            <div class="space-y-6 text-stone-100 tracking-[0.3em] font-extralight">
+                <p class="fade-in opacity-0" style="animation-delay: 0.8s;">おかえりなさい</p>
+                <p class="fade-in opacity-0" style="animation-delay: 2.2s;">お疲れ様</p>
+                <p class="fade-in opacity-0" style="animation-delay: 3.6s;">またいつでも</p>
             </div>
 
-            <!-- 3つの次の一手 -->
-            <div id="advice-menu" class="fade-in opacity-0 space-y-4 pt-6" style="animation-delay: 4.5s;">
-                <p class="text-[10px] text-stone-500 tracking-widest mb-4">明日のための調律</p>
-                <button id="btn-exp" onclick="showAdvice('exp')" class="advice-box w-full py-4 rounded-lg text-[11px] tracking-widest text-stone-400">1ミリの実験（挑戦）</button>
-                <button id="btn-opt" onclick="showAdvice('opt')" class="advice-box w-full py-4 rounded-lg text-[11px] tracking-widest text-stone-400">OS最適化（自己肯定）</button>
-                <button id="btn-maint" onclick="showAdvice('maint')" class="advice-box w-full py-4 rounded-lg text-[11px] tracking-widest text-stone-400">メンテナンス（休息）</button>
+            <div id="advice-menu" class="fade-in opacity-0 space-y-4 pt-8" style="animation-delay: 5.5s;">
+                <p class="text-[9px] text-stone-600 tracking-[0.5em] mb-6 uppercase">調律の選択肢</p>
+                <button id="btn-exp" onclick="showAdvice('exp')" class="advice-box w-full py-5 rounded-lg text-[10px] tracking-[0.3em] text-stone-400 font-light">1ミリの実験（挑戦）</button>
+                <button id="btn-opt" onclick="showAdvice('opt')" class="advice-box w-full py-5 rounded-lg text-[10px] tracking-[0.3em] text-stone-400 font-light">OS最適化（自己肯定）</button>
+                <button id="btn-maint" onclick="showAdvice('maint')" class="advice-box w-full py-5 rounded-lg text-[10px] tracking-[0.3em] text-stone-400 font-light">メンテナンス（休息）</button>
                 
-                <p id="advice-display" class="text-[11px] leading-relaxed text-amber-200/60 mt-6 px-4 min-h-[3em]"></p>
+                <div id="advice-container" class="mt-10 px-6 min-h-[6em]">
+                    <p id="advice-display" class="text-[11px] leading-relaxed text-amber-200/50 tracking-widest transition-opacity duration-1000 opacity-0"></p>
+                </div>
             </div>
 
-            <button onclick="location.reload()" class="fade-in opacity-0 mt-8 text-[10px] tracking-[0.5em] text-stone-600 uppercase" style="animation-delay: 7s;">[ 戻る ]</button>
+            <button onclick="location.reload()" class="fade-in opacity-0 mt-14 text-[9px] tracking-[0.6em] text-stone-700 hover:text-stone-400 transition" style="animation-delay: 8.5s;">
+                [ 深呼吸して戻る ]
+            </button>
         </div>
     </div>
 
     <script>
-        // --- データ・エンジン (100パターン規模) ---
         const advDB = {
             exp: [
-                "信号が青でも、あえて一回見送って、自分のリズムを優先してみる。",
-                "コンビニで、直感だけで一番『色がきれい』と思った物を選んでみる。",
-                "帰り道、一回だけ空を見上げて、雲に自分勝手な名前を付ける。",
-                "挨拶の語尾を、相手に合わせず『自分の呼吸』で止めてみる。",
-                "時計を見る前に、今の自分の感覚で『何時かな』と予測してみる。",
-                "『普通に美味しい』を飲み込み、『私の好きな味だ』と心で呟く。",
-                "SNSを開く前に、指先を画面から1センチ浮かせて3秒待ってみる。"
+                "世界が『効率』を求めて急かすとき、あえて一番遠いレジに並び、自分の呼吸を数えてみる。",
+                "コンビニの棚。誰かが決めた『売れ筋』ではなく、今、あなたの瞳が惹かれた『色』を拾い上げる。",
+                "挨拶の語尾を、相手の期待に合わせず、自分の肺から空気がなくなる瞬間にそっと置いてくる。",
+                "最短ルートを捨て、地図にない角を曲がる。迷子ではなく、あなただけの領土を検地しているのだ。",
+                "『どちらでもいい』を一度だけ休んで、微かな『こっち』という心の振動を、言葉にして放流する。"
             ],
             opt: [
-                "あなたの繊細さは、世界を高解像度で捉えるための最新センサーです。",
-                "今日ここで自分を点検したという事実が、何よりの資産です。",
-                "あなたはもう、誰かの身代わりを演じる必要はありません。そのままのOSでいい。",
-                "星を見てください。あなたが自分を守り抜いてきた確かな証拠です。",
-                "『普通』という外付けHDDを外しても、あなたは正常に動作しています。",
-                "あなたの不具合は、古い環境に適合しなくなった『進化の予兆』です。"
+                "あなたの繊細さは、鈍色の世界を千の色彩に分光する、高潔なプリズムである。",
+                "適応障害というログは、その環境があなたの美意識（プロトコル）に適合していないことを告げる誠実な反応だ。",
+                "星を見てください。あなたが自分を殺さず、今日までこのOSを守り抜いてきたという尊い蓄積です。",
+                "『普通』という汎用ドライバを外した跡地。そこは、あなただけの花が咲くための、肥沃な荒野だ。",
+                "あなたは誰かの身代わり（サロゲート）ではない。あなたの心拍こそが、この宇宙で唯一のマスタークロックだ。"
             ],
             maint: [
-                "今はスリープモードが正解。何もしない勇気が、CPUを冷却します。",
-                "外部APIを遮断して。今は内部ログを整理する大切な時間です。",
-                "明日のタスクを一つ、未来の自分に『委託』して、今日は寝ましょう。",
-                "説明を休んでいい。誰にも理解されない静寂を、資産として貯めておく。",
-                "電源を切るように、目を閉じて、自分だけの暗闇を10秒だけ味わう。"
+                "今はスリープモードが正解。何もしない時間は、魂という名のCPUを冷却する、贅沢なメンテナンスだ。",
+                "外部からのパケットをすべて遮断する。暗闇に一人座るとき、あなたは自分自身に合流しているのだ。",
+                "言葉にできないという停滞。それは、説明というコストを支払わずに、自分の聖域を独占できている豊かさだ。",
+                "明日のタスクを、未来の自分という名の友人にそっと委託する。今夜のあなたは、ただの生命として眠っていい。",
+                "電源を切るようにまぶたを閉じる。あなたの内側にある深い夜こそが、明日の光を醸造する場所だ。"
             ]
         };
 
-        // --- アプリケーション・ロジック ---
         let trustCount = parseInt(localStorage.getItem('ashimoto_trust') || '0');
         let config = JSON.parse(localStorage.getItem('ashimoto_config') || 'null');
         let setupIndex = 0;
@@ -127,52 +127,56 @@
             else { applyConfig(); showMain(); }
         }
 
-        // 初期設定
         function runSetup() {
             const qs = [
                 { q: "鏡のタイプは？", a: [{t:"ありのままを映して", v:"accept"}, {t:"曇りを指摘して", v:"logic"}] },
                 { q: "通信の頻度は？", a: [{t:"必要なときだけ", v:"low"}, {t:"定期的にノックして", v:"high"}] },
                 { q: "報酬の形は？", a: [{t:"温かい共感", v:"heart"}, {t:"次の一手", v:"step"}] }
             ];
-            document.getElementById('setup-screen').classList.remove('hidden');
+            const screen = document.getElementById('setup-screen');
+            screen.classList.remove('hidden');
             const cur = qs[setupIndex];
             document.getElementById('setup-q').innerText = cur.q;
             const btns = document.getElementById('setup-btns');
             btns.innerHTML = '';
             cur.a.forEach(opt => {
                 const b = document.createElement('button');
-                b.className = "bg-white/5 border border-white/10 py-5 rounded-full text-xs tracking-widest";
+                b.className = "bg-white/5 border border-white/10 py-5 rounded-full text-[11px] tracking-widest font-light";
                 b.innerText = opt.t;
                 b.onclick = () => {
                     setupAnswers.push(opt.v);
                     setupIndex++;
                     if(setupIndex < qs.length) runSetup();
-                    else {
-                        config = { type: setupAnswers[0], reward: setupAnswers[2] };
-                        localStorage.setItem('ashimoto_config', JSON.stringify(config));
-                        document.getElementById('setup-screen').classList.add('hidden');
-                        applyConfig(); showMain();
-                    }
+                    else finishSetup();
                 };
                 btns.appendChild(b);
             });
         }
 
+        function finishSetup() {
+            config = { type: setupAnswers[0], reward: setupAnswers[2] };
+            localStorage.setItem('ashimoto_config', JSON.stringify(config));
+            document.getElementById('setup-screen').classList.add('hidden');
+            applyConfig(); showMain();
+        }
+
         function applyConfig() {
             const orb = document.getElementById('orb');
-            orb.style.background = config.type === 'accept' 
-                ? "radial-gradient(circle, rgba(255,180,80,0.7) 0%, rgba(255,100,0,0) 75%)"
-                : "radial-gradient(circle, rgba(200,230,255,0.6) 0%, rgba(100,150,255,0) 75%)";
+            if(config.type === 'accept') {
+                document.documentElement.style.setProperty('--orb-color1', 'rgba(255,180,80,0.7)');
+            } else {
+                document.documentElement.style.setProperty('--orb-color1', 'rgba(200,230,255,0.6)');
+            }
         }
 
         function showMain() {
             document.getElementById('main-screen').classList.remove('hidden');
-            setTimeout(() => document.getElementById('message').style.opacity = '1', 1000);
-            setTimeout(() => document.getElementById('actions').style.opacity = '1', 2500);
+            setTimeout(() => document.getElementById('message').style.opacity = '1', 800);
+            setTimeout(() => document.getElementById('actions').style.opacity = '1', 2000);
         }
 
         function handleFlow(type) {
-            createParticles(window.innerWidth/2, window.innerHeight*0.35, 40);
+            createParticles(window.innerWidth/2, window.innerHeight*0.35, 45);
             document.getElementById('main-screen').classList.add('hidden');
             if(type === 3) document.getElementById('text-input').classList.remove('hidden');
             else finalize();
@@ -181,21 +185,24 @@
         function finalize() {
             trustCount++;
             localStorage.setItem('ashimoto_trust', trustCount);
-            createParticles(window.innerWidth/2, window.innerHeight*0.4, 60);
+            createParticles(window.innerWidth/2, window.innerHeight*0.4, 70);
             document.getElementById('text-input').classList.add('hidden');
-            document.getElementById('orb').style.transform = 'translate(-50%, -50%) scale(0.6)';
+            document.getElementById('orb').style.transform = 'translate(-50%, -50%) scale(0.65)';
             document.getElementById('road-light').style.opacity = '1';
             document.getElementById('final-words').classList.remove('hidden');
             updateVault();
         }
 
         function showAdvice(cat) {
-            const list = advDB[cat];
-            const text = list[Math.floor(Math.random() * list.length)];
-            document.getElementById('advice-display').innerText = text;
-            // 選択されたボタンを強調
-            ['exp','opt','maint'].forEach(c => document.getElementById(`btn-${c}`).style.borderColor = 'rgba(255,255,255,0.05)');
-            document.getElementById(`btn-${cat}`).style.borderColor = 'rgba(255,200,100,0.4)';
+            const display = document.getElementById('advice-display');
+            display.style.opacity = '0';
+            setTimeout(() => {
+                const list = advDB[cat];
+                display.innerText = list[Math.floor(Math.random() * list.length)];
+                display.style.opacity = '1';
+                ['exp','opt','maint'].forEach(c => document.getElementById(`btn-${c}`).style.borderColor = 'rgba(255,255,255,0.06)');
+                document.getElementById(`btn-${cat}`).style.borderColor = 'rgba(255,200,100,0.4)';
+            }, 600);
         }
 
         function updateVault() {
@@ -205,7 +212,7 @@
                 const s = document.createElement('div');
                 s.className = 'asset-star';
                 const size = Math.random() * 2 + 1;
-                s.style.width = size+'px'; s.style.height = size+'px'; s.style.margin = '0 3px';
+                s.style.width = size+'px'; s.style.height = size+'px'; s.style.margin = '0 3.5px';
                 vault.appendChild(s);
             }
         }
@@ -218,11 +225,11 @@
                 p.style.width = size+'px'; p.style.height = size+'px';
                 p.style.left = x+'px'; p.style.top = y+'px';
                 document.body.appendChild(p);
-                const angle = Math.random() * Math.PI * 2, dist = Math.random() * 200 + 40;
+                const angle = Math.random() * Math.PI * 2, dist = Math.random() * 220 + 40;
                 p.animate([
                     { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
                     { transform: `translate(calc(-50% + ${Math.cos(angle)*dist}px), calc(-50% + ${Math.sin(angle)*dist}px)) scale(0)`, opacity: 0 }
-                ], { duration: 2500 + Math.random()*2000, easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)' });
+                ], { duration: 2500 + Math.random()*2000, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' });
                 setTimeout(() => p.remove(), 4500);
             }
         }
