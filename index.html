@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ashimoto - 資産と成長の調律</title>
+    <title>Ashimoto - 聖域の調律</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --orb-color: rgba(255,180,80,0.6); --road-opacity: 0.12; }
+        :root { --orb-color: rgba(255,180,80,0.6); }
         body { background-color: #050505; overflow: hidden; font-family: 'Hiragino Mincho ProN', 'serif'; color: #d4d4d4; }
         .orb {
             position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%);
@@ -15,26 +15,24 @@
             filter: blur(40px); transition: all 5s cubic-bezier(0.4, 0, 0.2, 1);
             animation: breathe 12s infinite ease-in-out;
         }
-        @keyframes breathe { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.4; } 50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.7; } }
+        @keyframes breathe { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.4; } 50% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.7; } }
         .particle { position: absolute; pointer-events: none; background: #ffe0aa; border-radius: 50%; z-index: 5; }
         .road-light {
             position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
             width: 450px; height: 550px;
-            background: radial-gradient(ellipse at bottom, rgba(255,200,100, var(--road-opacity)) 0%, transparent 85%);
+            background: radial-gradient(ellipse at bottom, rgba(255,200,100, 0.12) 0%, transparent 85%);
             opacity: 0; transition: opacity 6s ease;
         }
-        /* 資産の繋がり（星座）の演出 */
         .asset-star { position: absolute; background: #fff; border-radius: 50%; opacity: 0.3; filter: blur(1px); transition: all 3s; }
-        .star-line { position: absolute; background: rgba(255,255,255,0.05); height: 1px; transform-origin: left center; pointer-events: none; }
+        .star-line { position: absolute; background: rgba(255,255,255,0.04); height: 1px; transform-origin: left center; pointer-events: none; }
         button { backdrop-filter: blur(15px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
         .fade-in { animation: fadeIn 4s forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .advice-box { background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); }
+        .advice-box { background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
 <body>
 
-    <!-- 資産の貯蔵庫 (Mental Vault) -->
     <div id="vault-container" class="fixed top-12 left-0 right-0 h-16 pointer-events-none z-50">
         <div id="vault" class="relative w-full h-full flex justify-center items-center"></div>
     </div>
@@ -44,124 +42,65 @@
 
     <div id="ui-container" class="fixed inset-0 flex flex-col justify-end p-12 space-y-8 z-20">
         
+        <!-- 1. 初期設定 -->
         <div id="setup-screen" class="hidden flex flex-col space-y-12 mb-12">
             <p id="setup-q" class="text-center tracking-[0.4em] leading-relaxed text-stone-500 text-xs font-light"></p>
             <div id="setup-btns" class="flex flex-col space-y-4"></div>
         </div>
 
+        <!-- 2. メイン -->
         <div id="main-screen" class="hidden flex flex-col space-y-10">
-            <div id="message" class="text-center mb-24 opacity-0 transition-opacity duration-3000 text-xl tracking-[0.5em] font-extralight text-stone-200">
-                最近、どう？
-            </div>
+            <div id="message" class="text-center mb-24 opacity-0 transition-opacity duration-3000 text-xl tracking-[0.5em] font-extralight text-stone-200">最近、どう？</div>
             <div id="actions" class="flex flex-col space-y-5 opacity-0 transition-opacity duration-2000">
-                <button onclick="handleFlow(1)" class="bg-white/[0.03] border border-white/10 py-6 rounded-full text-[11px] tracking-[0.3em] font-light">言葉にならない</button>
-                <button onclick="handleFlow(2)" class="bg-white/[0.03] border border-white/10 py-6 rounded-full text-[11px] tracking-[0.3em] font-light">普通、かな</button>
-                <button onclick="handleFlow(3)" class="bg-white/[0.03] border border-white/10 py-6 rounded-full text-[11px] tracking-[0.3em] font-light">少し、話したい</button>
+                <button onclick="handleFlow(1)" class="bg-white/[0.03] border border-white/10 py-6 rounded-full text-[11px] tracking-[0.3em]">言葉にならない</button>
+                <button onclick="handleFlow(2)" class="bg-white/[0.03] border border-white/10 py-6 rounded-full text-[11px] tracking-[0.3em]">普通、かな</button>
+                <button onclick="handleFlow(3)" class="bg-white/[0.03] border border-white/10 py-6 rounded-full text-[11px] tracking-[0.3em]">少し、話したい</button>
             </div>
         </div>
 
+        <!-- 3. 記述 -->
         <div id="text-input" class="hidden flex flex-col space-y-10">
-            <textarea id="user-log" class="bg-transparent border-b border-white/10 p-6 text-stone-300 focus:outline-none focus:border-amber-500/20 transition-all resize-none h-56 tracking-[0.15em] leading-loose font-light" placeholder="誰の目も気にせず、心の中を置いてください。"></textarea>
-            <button onclick="finalize()" class="text-amber-200/30 text-[9px] tracking-[0.6em] hover:text-amber-200 transition uppercase font-light">静かに預ける</button>
+            <textarea id="user-log" class="bg-transparent border-b border-white/10 p-6 text-stone-300 focus:outline-none h-56 resize-none tracking-[0.15em] leading-loose font-light" placeholder="誰の目も気にせず、心の中を置いてください。"></textarea>
+            <button onclick="finalize()" class="text-amber-200/30 text-[9px] tracking-[0.6em] uppercase">静かに預ける</button>
         </div>
 
+        <!-- 4. 終了画面 (連打対応型) -->
         <div id="final-words" class="hidden text-center space-y-14 pb-12 overflow-y-auto max-h-[85vh]">
             <div class="space-y-8 text-stone-100 tracking-[0.4em] font-extralight">
-                <p class="fade-in opacity-0" style="animation-delay: 1s;">おかえりなさい</p>
-                <p class="fade-in opacity-0" style="animation-delay: 2.5s;">お疲れ様</p>
-                <p class="fade-in opacity-0" style="animation-delay: 4s;">またいつでも</p>
+                <p class="fade-in opacity-0" style="animation-delay: 0.8s;">おかえりなさい</p>
+                <p class="fade-in opacity-0" style="animation-delay: 2s;">お疲れ様</p>
+                <p class="fade-in opacity-0" style="animation-delay: 3.2s;">またいつでも</p>
             </div>
 
-            <div id="advice-menu" class="fade-in opacity-0 space-y-5 pt-10 border-t border-white/[0.03]" style="animation-delay: 6s;">
+            <div id="advice-menu" class="fade-in opacity-0 space-y-5 pt-10 border-t border-white/[0.03]" style="animation-delay: 5s;">
                 <p class="text-[8px] text-stone-700 tracking-[0.7em] mb-8 uppercase">資産を運用する</p>
                 <div class="grid grid-cols-1 gap-4">
                     <button id="btn-exp" onclick="showAdvice('exp')" class="advice-box py-5 rounded-lg text-[10px] tracking-[0.4em] text-stone-500 font-light hover:text-stone-300">1ミリの実験</button>
                     <button id="btn-opt" onclick="showAdvice('opt')" class="advice-box py-5 rounded-lg text-[10px] tracking-[0.4em] text-stone-500 font-light hover:text-stone-300">OS最適化</button>
                     <button id="btn-maint" onclick="showAdvice('maint')" class="advice-box py-5 rounded-lg text-[10px] tracking-[0.4em] text-stone-500 font-light hover:text-stone-300">メンテナンス</button>
                 </div>
-                <div id="advice-container" class="mt-12 px-8 min-h-[8em] flex items-center justify-center">
-                    <p id="advice-display" class="text-[12px] leading-relaxed text-amber-100/40 tracking-[0.2em] transition-opacity duration-1500 opacity-0 italic"></p>
+                <div id="advice-container" class="mt-12 px-8 min-h-[10em] flex items-center justify-center">
+                    <p id="advice-display" class="text-[12px] leading-relaxed text-amber-100/50 tracking-[0.2em] transition-opacity duration-1000 opacity-0 italic"></p>
                 </div>
             </div>
 
-            <button onclick="location.reload()" class="fade-in opacity-0 mt-16 text-[9px] tracking-[0.8em] text-stone-800 hover:text-stone-500 transition" style="animation-delay: 10s;">
-                [ 再起動 ]
-            </button>
+            <button onclick="location.reload()" class="fade-in opacity-0 mt-16 text-[9px] tracking-[0.8em] text-stone-800" style="animation-delay: 9s;">[ 再起動 ]</button>
         </div>
     </div>
 
     <script>
         // 文学的なアドバイスDB
         const advDB = {
-            exp: [
-                "最短ルートを捨て、地図にない角を曲がる。あなたは今、あなただけの領土を検地しているのだ。",
-                "挨拶の語尾を、相手の期待に合わせず、自分の肺から空気がなくなる瞬間にそっと置いてくる。",
-                "世界が『効率』を求めて急かすとき、あえて一番遠いレジに並び、自分の呼吸を数えてみる。",
-                "コンビニの棚。誰かが決めた『売れ筋』ではなく、今、あなたの瞳が惹かれた『色』を拾い上げる。",
-                "SNSを開く前に、指先を画面から1センチ浮かせて3秒待つ。その静寂を支配してみる。"
-            ],
-            opt: [
-                "あなたの繊細さは、鈍色の世界を千の色彩に分光する、高潔なプリズムである。",
-                "適応障害というログは、その環境があなたの美意識（プロトコル）に適合していないことを告げる誠実な反応だ。",
-                "星を見てください。あなたが自分を殺さず、今日までこのOSを守り抜いてきたという尊い蓄積です。",
-                "あなたは誰かの身代わり（サロゲート）ではない。あなたの心拍こそが、宇宙で唯一のマスタークロックだ。",
-                "『普通』という汎用ドライバを外した跡地。そこは、あなただけの花が咲くための、肥沃な荒野だ。"
-            ],
-            maint: [
-                "今はスリープモードが正解。何もしない時間は、魂という名のCPUを冷却する、贅沢なメンテナンスだ。",
-                "外部からのパケットをすべて遮断する。暗闇に一人座るとき、あなたは自分自身に合流しているのだ。",
-                "言葉にできないという停滞。それは、説明というコストを支払わずに、自分の聖域を独占できている豊かさだ。",
-                "明日のタスクを、未来の自分という名の友人にそっと委託する。今夜のあなたは、ただの生命として眠っていい。",
-                "電源を切るようにまぶたを閉じる。あなたの内側にある深い夜こそが、明日の光を醸造する場所だ。"
-            ]
+            exp: ["最短ルートを捨て、地図にない角を曲がる。あなたは今、あなただけの領土を検地しているのだ。", "挨拶の語尾を、相手の期待に合わせず、自分の肺から空気がなくなる瞬間にそっと置いてくる。", "世界が『効率』を求めて急かすとき、あえて一番遠いレジに並び、自分の呼吸を数えてみる。", "コンビニの棚。誰かが決めた『売れ筋』ではなく、今、あなたの瞳が惹かれた『色』を拾い上げる。", "SNSを開く前に、指先を画面から1センチ浮かせて3秒待つ。その静寂を支配してみる。"],
+            opt: ["あなたの繊細さは、鈍色の世界を千の色彩に分光する、高潔なプリズムである。", "適応障害というログは、その環境があなたの美意識（プロトコル）に適合していないことを告げる誠実な反応だ。", "星を見てください。あなたが自分を殺さず、今日までこのOSを守り抜いてきたという尊い蓄積です。", "あなたは誰かの身代わりではない。あなたの心拍こそが、宇宙で唯一のマスタークロックだ。", "『普通』という汎用ドライバを外した跡地。そこは、あなただけの花が咲くための、肥沃な荒野だ。"],
+            maint: ["今はスリープモードが正解。何もしない時間は、魂という名のCPUを冷却する、贅沢なメンテナンスだ。", "外部からのパケットをすべて遮断する。暗闇に一人座るとき、あなたは自分自身に合流しているのだ。", "言葉にできないという停滞。それは、説明というコストを支払わずに、自分の聖域を独占できている豊かさだ。", "明日のタスクを、未来の自分という名の友人にそっと委託する。今夜のあなたは、ただの生命として眠っていい。", "電源を切るようにまぶたを閉じる。あなたの内側にある深い夜こそが、明日の光を醸造する場所だ。"]
         };
-// --- 動的メッセージ合成エンジン ---
-const parts = {
-    intro: ["今は、", "あなたの", "静かな", "深い", "そのままの"],
-    subject: ["呼吸が", "輪郭が", "孤独が", "エラーログが", "試行錯誤が"],
-    suffix: ["資産になります。", "守られています。", "美しいのです。", "次への予兆です。", "ここに在ります。"]
-};
-
-let lastClickTime = 0;
-let clickIntervals = [];
-
-function showAdvice(cat) {
-    const now = Date.now();
-    const interval = now - lastClickTime;
-    lastClickTime = now;
-
-    // 連打検知（500ms以下の間隔）
-    const isPanic = interval < 500;
-    
-    const display = document.getElementById('advice-display');
-    display.style.opacity = '0';
-
-    // 連打されるほど、次の表示までの「ため（静寂）」を長くする
-    const delay = isPanic ? Math.min(interval * 5, 2000) : 600;
-
-    setTimeout(() => {
-        let finalMsg = "";
-        if (isPanic) {
-            // パニック時は、短い「受容」の言葉を優先
-            finalMsg = "大丈夫。ゆっくり、吐き出して。";
-        } else {
-            // 通常時は文学的な合成メッセージ、またはDBから選出
-            const list = advDB[cat];
-            finalMsg = list[Math.floor(Math.random() * list.length)];
-        }
-        
-        display.innerText = finalMsg;
-        display.style.opacity = '1';
-        
-        // 連打の数だけ、Vault（資産）に「小さな火」を灯す（連打を無駄にしない）
-        createParticles(window.innerWidth/2, window.innerHeight/2, isPanic ? 5 : 20);
-    }, delay);
-}
 
         let trustCount = parseInt(localStorage.getItem('ashimoto_trust') || '0');
         let config = JSON.parse(localStorage.getItem('ashimoto_config') || 'null');
         let setupIndex = 0;
         let setupAnswers = [];
+        let lastClickTime = 0;
 
         function init() {
             updateVault();
@@ -170,11 +109,7 @@ function showAdvice(cat) {
         }
 
         function runSetup() {
-            const qs = [
-                { q: "鏡のタイプは？", a: [{t:"ありのままを映して", v:"accept"}, {t:"曇りを指摘して", v:"logic"}] },
-                { q: "通信の頻度は？", a: [{t:"必要なときだけ", v:"low"}, {t:"定期的にノックして", v:"high"}] },
-                { q: "報酬の形は？", a: [{t:"温かい共感", v:"heart"}, {t:"次の一手", v:"step"}] }
-            ];
+            const qs = [{ q: "鏡のタイプは？", a: [{t:"ありのままを映して", v:"accept"}, {t:"曇りを指摘して", v:"logic"}]}, { q: "通信の頻度は？", a: [{t:"必要なときだけ", v:"low"}, {t:"定期的にノックして", v:"high"}]}, { q: "報酬の形は？", a: [{t:"温かい共感", v:"heart"}, {t:"次の一手", v:"step"}]}];
             document.getElementById('setup-screen').classList.remove('hidden');
             const cur = qs[setupIndex];
             document.getElementById('setup-q').innerText = cur.q;
@@ -184,18 +119,13 @@ function showAdvice(cat) {
                 const b = document.createElement('button');
                 b.className = "bg-white/[0.03] border border-white/10 py-6 rounded-full text-[10px] tracking-[0.3em] font-light";
                 b.innerText = opt.t;
-                b.onclick = () => {
-                    setupAnswers.push(opt.v);
-                    setupIndex++;
-                    if(setupIndex < qs.length) runSetup();
-                    else finishSetup();
-                };
+                b.onclick = () => { setupAnswers.push(opt.v); setupIndex++; if(setupIndex < qs.length) runSetup(); else finishSetup(); };
                 btns.appendChild(b);
             });
         }
 
         function finishSetup() {
-            config = { type: setupAnswers, reward: setupAnswers };
+            config = { type: setupAnswers[0], reward: setupAnswers[2] };
             localStorage.setItem('ashimoto_config', JSON.stringify(config));
             document.getElementById('setup-screen').classList.add('hidden');
             applyConfig(); showMain();
@@ -203,22 +133,18 @@ function showAdvice(cat) {
 
         function applyConfig() {
             const orb = document.getElementById('orb');
-            const isWarm = config.type === 'accept';
-            const color = isWarm ? 'rgba(255,180,80,0.6)' : 'rgba(180,210,255,0.5)';
-            document.documentElement.style.setProperty('--orb-color', color);
-            // 資産に応じた「内面気象」の進化
-            const scale = 1 + (trustCount * 0.01);
-            orb.style.transform = `translate(-50%, -50%) scale(${Math.min(scale, 1.5)})`;
+            document.documentElement.style.setProperty('--orb-color', config.type === 'accept' ? 'rgba(255,180,80,0.6)' : 'rgba(180,210,255,0.5)');
+            orb.style.transform = `translate(-50%, -50%) scale(${1 + (trustCount * 0.005)})`;
         }
 
         function showMain() {
             document.getElementById('main-screen').classList.remove('hidden');
-            setTimeout(() => document.getElementById('message').style.opacity = '1', 1000);
-            setTimeout(() => document.getElementById('actions').style.opacity = '1', 2500);
+            setTimeout(() => document.getElementById('message').style.opacity = '1', 800);
+            setTimeout(() => document.getElementById('actions').style.opacity = '1', 2000);
         }
 
         function handleFlow(type) {
-            createParticles(window.innerWidth/2, window.innerHeight*0.35, 50);
+            createParticles(window.innerWidth/2, window.innerHeight*0.35, 45);
             document.getElementById('main-screen').classList.add('hidden');
             if(type === 3) document.getElementById('text-input').classList.remove('hidden');
             else finalize();
@@ -227,7 +153,7 @@ function showAdvice(cat) {
         function finalize() {
             trustCount++;
             localStorage.setItem('ashimoto_trust', trustCount);
-            createParticles(window.innerWidth/2, window.innerHeight*0.4, 80);
+            createParticles(window.innerWidth/2, window.innerHeight*0.4, 70);
             document.getElementById('text-input').classList.add('hidden');
             document.getElementById('orb').style.filter = 'blur(60px)';
             document.getElementById('road-light').style.opacity = '1';
@@ -235,53 +161,60 @@ function showAdvice(cat) {
             updateVault();
         }
 
+        // --- 連打（パニック）対応型アドバイス・エンジン ---
         function showAdvice(cat) {
+            const now = Date.now();
+            const interval = now - lastClickTime;
+            lastClickTime = now;
+            const isPanic = interval < 600; // 0.6秒以下の連打を検知
+
             const display = document.getElementById('advice-display');
             display.style.opacity = '0';
+
+            // 連打されるほど、表示をあえて遅延させて呼吸を整える
+            const delay = isPanic ? 1500 : 600;
+
             setTimeout(() => {
-                const list = advDB[cat];
-                display.innerText = list[Math.floor(Math.random() * list.length)];
+                let msg = "";
+                if (isPanic) {
+                    // パニック時は無限合成の短い受容メッセージ
+                    const intros = ["大丈夫。", "今は、", "ここに、", "そのまま。"];
+                    msg = intros[Math.floor(Math.random() * intros.length)] + " 吐き出して、大丈夫。";
+                } else {
+                    const list = advDB[cat];
+                    msg = list[Math.floor(Math.random() * list.length)];
+                }
+                display.innerText = msg;
                 display.style.opacity = '1';
-                ['exp','opt','maint'].forEach(c => {
-                    const el = document.getElementById(`btn-${c}`);
-                    el.style.borderColor = 'rgba(255,255,255,0.04)';
-                    el.style.color = '#777';
-                });
-                const active = document.getElementById(`btn-${cat}`);
-                active.style.borderColor = 'rgba(255,200,100,0.3)';
-                active.style.color = '#d4d4d4';
-            }, 800);
+                
+                // 連打分も「星（資産）」として計上し、粒子を舞わせる
+                if (isPanic) { trustCount++; updateVault(); createParticles(window.innerWidth/2, window.innerHeight/2, 10); }
+
+                ['exp','opt','maint'].forEach(c => document.getElementById(`btn-${c}`).style.borderColor = 'rgba(255,255,255,0.05)');
+                document.getElementById(`btn-${cat}`).style.borderColor = 'rgba(255,200,100,0.3)';
+            }, delay);
         }
 
         function updateVault() {
             const vault = document.getElementById('vault');
             vault.innerHTML = '';
-            const stars = Math.min(trustCount, 60);
-            const positions = [];
-            
+            const stars = Math.min(trustCount, 80);
+            const pos = [];
             for(let i=0; i<stars; i++) {
                 const s = document.createElement('div');
+                const x = (Math.random()-0.5)*320, y = (Math.random()-0.5)*60;
                 s.className = 'asset-star';
-                const size = Math.random() * 2 + 1;
-                const x = (Math.random() - 0.5) * 300;
-                const y = (Math.random() - 0.5) * 50;
-                s.style.width = size+'px'; s.style.height = size+'px';
+                s.style.width = (Math.random()*2+1)+'px'; s.style.height = s.style.width;
                 s.style.transform = `translate(${x}px, ${y}px)`;
                 vault.appendChild(s);
-                positions.push({x, y});
-
-                // 星座のように繋ぐロジック (3つに1つ)
-                if(i > 0 && i % 3 === 0) {
-                    const line = document.createElement('div');
-                    line.className = 'star-line';
-                    const prev = positions[i-1];
-                    const dist = Math.sqrt(Math.pow(x-prev.x, 2) + Math.pow(y-prev.y, 2));
-                    const angle = Math.atan2(y-prev.y, x-prev.x);
-                    line.style.width = dist + 'px';
-                    line.style.left = `calc(50% + ${prev.x}px)`;
-                    line.style.top = `calc(50% + ${prev.y}px)`;
-                    line.style.transform = `rotate(${angle}rad)`;
-                    vault.appendChild(line);
+                pos.push({x, y});
+                if(i > 0 && i % 4 === 0) {
+                    const l = document.createElement('div');
+                    l.className = 'star-line';
+                    const p = pos[i-1], d = Math.sqrt(Math.pow(x-p.x, 2) + Math.pow(y-p.y, 2)), a = Math.atan2(y-p.y, x-p.x);
+                    l.style.width = d+'px'; l.style.left = `calc(50% + ${p.x}px)`; l.style.top = `calc(50% + ${p.y}px)`;
+                    l.style.transform = `rotate(${a}rad)`;
+                    vault.appendChild(l);
                 }
             }
         }
@@ -290,19 +223,14 @@ function showAdvice(cat) {
             for(let i=0; i<count; i++) {
                 const p = document.createElement('div');
                 p.className = 'particle';
-                const size = Math.random() * 3 + 1;
-                p.style.width = size+'px'; p.style.height = size+'px';
-                p.style.left = x+'px'; p.style.top = y+'px';
+                const size = Math.random()*3+1;
+                p.style.width = size+'px'; p.style.height = size+'px'; p.style.left = x+'px'; p.style.top = y+'px';
                 document.body.appendChild(p);
-                const angle = Math.random() * Math.PI * 2, dist = Math.random() * 250 + 50;
-                p.animate([
-                    { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
-                    { transform: `translate(calc(-50% + ${Math.cos(angle)*dist}px), calc(-50% + ${Math.sin(angle)*dist}px)) scale(0)`, opacity: 0 }
-                ], { duration: 3000 + Math.random()*2000, easing: 'cubic-bezier(0.1, 0.8, 0.2, 1)' });
+                const a = Math.random()*Math.PI*2, d = Math.random()*260+40;
+                p.animate([{ transform: 'translate(-50%, -50%) scale(1)', opacity: 1 }, { transform: `translate(calc(-50% + ${Math.cos(a)*d}px), calc(-50% + ${Math.sin(a)*d}px)) scale(0)`, opacity: 0 }], { duration: 3000 + Math.random()*2000, easing: 'cubic-bezier(0.1, 0.8, 0.2, 1)' });
                 setTimeout(() => p.remove(), 5000);
             }
         }
-
         init();
     </script>
 </body>
